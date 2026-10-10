@@ -79,17 +79,23 @@ The `star-data` volume keeps orders and contact messages when the container is r
 | `SECRET_KEY` | `dev-secret-key`                   | Used by Flask to sign session data. Set your own value outside local development. |
 | `DATA_DIR`   | Project folder (`/data` in Docker) | Where `orders.json` and `customers_messages.json` are stored.                     |
 
-
-## ScreenShots 
+## ScreenShots
 
 ### Home
+
 ![Home page with menu, order form and receipt](screenshots/homepage.png)
 
 ### About
+
 ![About page](screenshots/aboutus.png)
 
 ### Contact
+
 ![Contact page with message form](screenshots/contactus.png)
+
+### Receipt
+
+![Receipt Print](screenshots/receipt.png)
 
 ## Good to know
 
