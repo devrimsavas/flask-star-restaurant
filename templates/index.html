@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title or "Menu" }} · {{ restaurant_name|title }}{% endblock %}
+
+{% block head %}
+<style>
+    /* ---------- Menu table ---------- */
+    .menu-table-wrap { max-height: 460px; overflow-y: auto; }
+    .menu-table { margin: 0; font-size: .875rem; }
+    .menu-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--surface-alt);
+        font-size: .68rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--muted);
+        padding: .6rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+    }
+    .menu-table td {
+        padding: .7rem 1.25rem;
+        border-color: var(--line-soft);
+        vertical-align: middle;
+    }
+    .menu-table tbody tr { transition: background-color .12s; }
+    .menu-table tbody tr:hover td { background: var(--row-hover); }
+    .menu-table tbody tr:last-child td { border-bottom: 0; }
+    .item-no { color: var(--faint); font-size: .78rem; font-variant-numeric: tabular-nums; }
+    .item-name { font-weight: 500; }
+    .price { font-variant-numeric: tabular-nums; font-weight: 500; }
+
+    /* ---------- Order form ---------- */
+    .qty .btn {
+        border: 1px solid var(--line);
+        background: var(--surface-alt);
+        color: var(--muted);
+        padding: .5rem .75rem;
+    }
+    .qty .btn:hover { color: var(--ink); background: var(--soft); }
+    .qty input { font-variant-numeric: tabular-nums; }
+    .total-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .7rem 1rem;
+        border-radius: 10px;
+        background: var(--brand-soft);
+        font-size: .85rem;
+    }
+    .total-box strong {
+        color: var(--brand-text);
+        font-size: 1.05rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- Receipt preview ---------- */
+    .receipt-lines {
+        list-style: none;
+        margin: 0 0 1rem;
+        padding: 0;
+        max-height: 240px;
+        overflow-y: auto;
+    }
+    .receipt-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: .55rem 0;
+        border-bottom: 1px dashed var(--line);
+        font-size: .85rem;
+    }
+    .receipt-line:last-child { border-bottom: 0; }
+    .receipt-line small { color: var(--muted); font-size: .75rem; }
+    .badge-new {
+        background: var(--brand-soft);
+        color: var(--brand-text);
+        font-size: .62rem;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        padding: .2rem .45rem;
+        border-radius: 6px;
+        margin-left: .35rem;
+        vertical-align: middle;
+    }
+    .receipt-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: .75rem;
+        border-top: 1px solid var(--line);
+        font-size: .85rem;
+    }
+    .receipt-total strong { font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    /* ---------- Empty states ---------- */
+    .empty-state {
+        text-align: center;
+        color: var(--muted);
+        font-size: .85rem;
+        padding: 2.5rem 1rem;
+    }
+    .empty-state i {
+        display: block;
+        font-size: 1.75rem;
+        color: var(--faint);
+        margin-bottom: .5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% set items = menu.menu_items if menu else [] %}
+{% set prices = items|map(attribute="food_price")|list %}
+
+<!-- Page header -->
+<section class="container pt-4 pb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+        <div>
+            <div class="eyebrow mb-1">Daily menu</div>
+            <h1 class="page-title mb-1">{{ title or "Star Restaurant Menu" }}</h1>
+            <p class="text-muted mb-0 small">Browse today's dishes, take orders and print receipts.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="stat">
+                <div class="stat-value">{{ items|length }}</div>
+                <div class="stat-label">Dishes</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">
+                    {% if prices %}{{ currency }}{{ "%.0f"|format(prices|min) }}{% else %}&ndash;{% endif %}
+                </div>
+                <div class="stat-label">From</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">
+                    {% if prices %}{{ currency }}{{ "%.0f"|format(prices|max) }}{% else %}&ndash;{% endif %}
+                </div>
+                <div class="stat-label">Up to</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container pb-5">
+    <div class="row g-3">
+
+        <!-- Menu table -->
+        <div class="col-lg-7">
+            <div class="panel h-100 d-flex flex-column">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="bi bi-journal-text"></i>Today's menu</h2>
+                    <div class="input-group input-group-sm" style="max-width: 210px;">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="search" class="form-control" id="menuSearch" placeholder="Search dishes"
+                               aria-label="Search dishes" {% if not items %}disabled{% endif %}>
+                    </div>
+                </div>
+
+                {% if items %}
+                <div class="menu-table-wrap flex-fill">
+                    <table class="table menu-table" id="menuTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 56px;">#</th>
+                                <th>Dish</th>
+                                <th class="text-end">Price</th>
+                                <th style="width: 56px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr data-name="{{ item.food_name|lower }}">
+                                <td class="item-no">{{ "%02d"|format(item.item_number) if item.item_number is number else item.item_number }}</td>
+                                <td class="item-name">{{ item.food_name }}</td>
+                                <td class="text-end price">{{ currency }}{{ "%.2f"|format(item.food_price) }}</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn-icon" data-order="{{ item.food_name }}"
+                                            title="Add to order" aria-label="Add {{ item.food_name }} to order">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr id="noResults" class="d-none">
+                                <td colspan="4" class="empty-state">No dishes match your search.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                    <span>{{ items|length }} dishes</span>
+                    <span>Menu total <span class="price text-body ms-1">{{ currency }}{{ "%.2f"|format(menu.total_price) }}</span></span>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-egg-fried"></i>
+                    The menu is empty. Add your first dish below.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Order + receipt -->
+        <div class="col-lg-5 d-flex flex-column gap-3">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="bi bi-bag"></i>New order</h2>
+                </div>
+                <div class="panel-body">
+                    <form id="orderForm" action="{{ url_for('getorder') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="customername" class="form-label">Customer</label>
+                            <input type="text" class="form-control" id="customername" name="customername"
+                                   placeholder="Customer name" maxlength="60" required>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-7">
+                                <label for="getordername" class="form-label">Dish</label>
+                                <select class="form-select" id="getordername" name="getordername" required>
+                                    {% for item in items %}
+                                    <option value="{{ item.food_name }}" data-price="{{ item.food_price }}">
+                                        {{ item.food_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label for="getorderquantity" class="form-label">Quantity</label>
+                                <div class="input-group qty">
+                                    <button class="btn" type="button" data-step="-1" aria-label="Decrease quantity">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center" id="getorderquantity"
+                                           name="getorderquantity" min="1" step="1" value="1" required>
+                                    <button class="btn" type="button" data-step="1" aria-label="Increase quantity">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="total-box mb-3">
+                            <span class="text-muted">Order total</span>
+                            <strong id="orderTotal">{{ currency }}0.00</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-brand w-100" id="orderSubmit"
+                                {% if not items %}disabled{% endif %}>
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="orderSpinner"
+                                  aria-hidden="true"></span>
+                            Place order
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel flex-fill">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="bi bi-receipt"></i>Receipt</h2>
+                    <a href="#" class="btn btn-sm btn-soft d-none" id="printButton" target="_blank">
+                        <i class="bi bi-printer me-1"></i>Print
+                    </a>
+                </div>
+                <div class="panel-body" id="receiptArea">
+                    <div class="empty-state py-3">
+                        <i class="bi bi-receipt-cutoff"></i>
+                        Place an order to see the receipt here.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu management -->
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="bi bi-sliders"></i>Manage menu</h2>
+                    <ul class="nav segmented" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabAdd"
+                                    type="button" role="tab">Add</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabUpdate"
+                                    type="button" role="tab">Update price</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabRemove"
+                                    type="button" role="tab">Remove</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel-body tab-content">
+                    <!-- Add -->
+                    <div class="tab-pane fade show active" id="tabAdd" role="tabpanel">
+                        <form action="{{ url_for('addnewfood') }}" method="POST" class="row g-3 align-items-end">
+                            <div class="col-md-6">
+                                <label for="newfoodname" class="form-label">Dish name</label>
+                                <input type="text" class="form-control" id="newfoodname" name="newfoodname"
+                                       placeholder="e.g. Pad Thai" maxlength="50" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="newfoodprice" class="form-label">Price ({{ currency }})</label>
+                                <input type="number" class="form-control" id="newfoodprice" name="newfoodprice"
+                                       min="0.01" step="0.01" placeholder="0.00" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-brand w-100">Add dish</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Update -->
+                    <div class="tab-pane fade" id="tabUpdate" role="tabpanel">
+                        {% if items %}
+                        <form action="{{ url_for('updatefoodprice') }}" method="POST" class="row g-3 align-items-end">
+                            <div class="col-md-6">
+                                <label for="updatefoodname" class="form-label">Dish</label>
+                                <select class="form-select" id="updatefoodname" name="updatefoodname" required>
+                                    {% for item in items %}
+                                    <option value="{{ item.food_name }}" data-price="{{ item.food_price }}">
+                                        {{ item.food_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="updatefoodprice" class="form-label">New price ({{ currency }})</label>
+                                <input type="number" class="form-control" id="updatefoodprice" name="updatefoodprice"
+                                       min="0.01" step="0.01" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-soft w-100">Update price</button>
+                            </div>
+                        </form>
+                        {% else %}
+                        <p class="text-muted small mb-0">There are no dishes to update yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Remove -->
+                    <div class="tab-pane fade" id="tabRemove" role="tabpanel">
+                        {% if items %}
+                        <form action="{{ url_for('removefood') }}" method="POST" class="row g-3 align-items-end"
+                              onsubmit="return confirm('Remove ' + this.removefoodname.value + ' from the menu?');">
+                            <div class="col-md-9">
+                                <label for="removefoodname" class="form-label">Dish</label>
+                                <select class="form-select" id="removefoodname" name="removefoodname" required>
+                                    {% for item in items %}
+                                    <option value="{{ item.food_name }}">{{ item.food_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-soft-danger w-100">Remove dish</button>
+                            </div>
+                        </form>
+                        {% else %}
+                        <p class="text-muted small mb-0">There are no dishes to remove.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const currency = {{ currency|tojson }};
+    const fmt = value => `${currency}${Number(value).toFixed(2)}`;
+
+    // ---------- Live menu search ----------
+    const search = document.getElementById("menuSearch");
+    const rows = document.querySelectorAll("#menuTable tbody tr[data-name]");
+    const noResults = document.getElementById("noResults");
+
+    if (search) {
+        search.addEventListener("input", () => {
+            const query = search.value.trim().toLowerCase();
+            let visible = 0;
+            rows.forEach(row => {
+                const match = row.dataset.name.includes(query);
+                row.classList.toggle("d-none", !match);
+                if (match) visible++;
+            });
+            if (noResults) noResults.classList.toggle("d-none", visible > 0);
+        });
+    }
+
+    // ---------- Order form: live total and quantity buttons ----------
+    const form = document.getElementById("orderForm");
+    const dish = document.getElementById("getordername");
+    const qty = document.getElementById("getorderquantity");
+    const total = document.getElementById("orderTotal");
+    const submitBtn = document.getElementById("orderSubmit");
+    const spinner = document.getElementById("orderSpinner");
+
+    function updateTotal() {
+        const option = dish.selectedOptions[0];
+        const price = option ? parseFloat(option.dataset.price) : 0;
+        const quantity = Math.max(parseInt(qty.value, 10) || 0, 0);
+        total.textContent = fmt(price * quantity);
+    }
+
+    dish.addEventListener("change", updateTotal);
+    qty.addEventListener("input", updateTotal);
+
+    document.querySelectorAll("[data-step]").forEach(button => {
+        button.addEventListener("click", () => {
+            const next = (parseInt(qty.value, 10) || 0) + parseInt(button.dataset.step, 10);
+            qty.value = Math.max(next, 1);
+            updateTotal();
+        });
+    });
+
+    // "+" buttons in the menu table pre-select the dish
+    document.querySelectorAll("[data-order]").forEach(button => {
+        button.addEventListener("click", () => {
+            dish.value = button.dataset.order;
+            updateTotal();
+            form.scrollIntoView({ behavior: "smooth", block: "center" });
+            qty.focus({ preventScroll: true });
+            qty.select();
+        });
+    });
+
+    updateTotal();
+
+    // ---------- Update price: show current price as placeholder ----------
+    const updateSelect = document.getElementById("updatefoodname");
+    const updatePrice = document.getElementById("updatefoodprice");
+    if (updateSelect && updatePrice) {
+        const syncPlaceholder = () => {
+            updatePrice.placeholder = "Now " + fmt(updateSelect.selectedOptions[0].dataset.price);
+        };
+        updateSelect.addEventListener("change", syncPlaceholder);
+        syncPlaceholder();
+    }
+
+    // ---------- Receipt rendering (built with textContent to avoid HTML injection) ----------
+    function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+    }
+
+    function renderReceipt(data) {
+        const area = document.getElementById("receiptArea");
+        const orders = data.customer_data.orders;
+        area.replaceChildren();
+
+        const header = el("div", "d-flex justify-content-between align-items-baseline mb-2");
+        header.append(
+            el("span", "fw-semibold", data.customer),
+            el("small", "text-muted", `${orders.length} line${orders.length === 1 ? "" : "s"}`)
+        );
+
+        const list = el("ul", "receipt-lines");
+        orders.forEach((order, index) => {
+            const unit = order.unit_price ?? order.total_price / order.quantity;
+            const li = el("li", "receipt-line");
+
+            const left = el("div");
+            const title = el("div", null, `${order.quantity} × ${order.item}`);
+            if (index === orders.length - 1) title.append(el("span", "badge-new", "New"));
+            left.append(title, el("small", null, `${fmt(unit)} each`));
+
+            li.append(left, el("span", "price", fmt(order.total_price)));
+            list.append(li);
+        });
+
+        const totalRow = el("div", "receipt-total");
+        totalRow.append(
+            el("span", "text-muted", "Total paid"),
+            el("strong", null, fmt(data.customer_data.total_paid))
+        );
+
+        area.append(header, list, totalRow);
+        list.scrollTop = list.scrollHeight;
+
+        const printButton = document.getElementById("printButton");
+        printButton.href = data.receipt_url + "?print=1";
+        printButton.classList.remove("d-none");
+    }
+
+    // ---------- Submit order via fetch ----------
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        submitBtn.disabled = true;
+        spinner.classList.remove("d-none");
+
+        try {
+            const response = await fetch(form.action, { method: "POST", body: new FormData(form) });
+            const data = await response.json();
+
+            if (!response.ok) {
+                showToast(data.error || "Could not place the order.", "danger");
+                return;
+            }
+
+            renderReceipt(data);
+            showToast(`Order placed for ${data.customer}.`, "success");
+            qty.value = 1;
+            updateTotal();
+        } catch (error) {
+            console.error(error);
+            showToast("Network error. Please try again.", "danger");
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add("d-none");
+        }
+    });
+})();
+</script>
+{% endblock %}

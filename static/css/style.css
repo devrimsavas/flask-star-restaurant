@@ -1,0 +1,442 @@
+/* ==========================================================
+   Star Restaurant - global theme
+   Shared by every page that extends base.html.
+   Dark is the default theme; light is available via the navbar toggle.
+   Page-specific styles live in each template's {% block head %}.
+   ========================================================== */
+
+/* ---------- Design tokens: dark (default) ---------- */
+:root,
+[data-bs-theme="dark"] {
+    --brand: #f76b1c;
+    --brand-dark: #e8590c;
+    --brand-soft: rgba(247, 107, 28, .14);
+    --brand-text: #ff9a5c;
+
+    --bg: #0f1012;
+    --surface: #17181b;
+    --surface-alt: #1d1f23;
+    --line: #2a2c31;
+    --line-soft: #222428;
+    --ink: #e6e7ea;
+    --muted: #9095a0;
+    --faint: #5b606a;
+
+    --soft: #24262b;
+    --soft-hover: #2c2f35;
+    --soft-active: #33363d;
+    --row-hover: #1c1e22;
+    --nav-bg: rgba(15, 16, 18, .75);
+    --placeholder: #6b707a;
+    --input-focus-bg: #1f2125;
+    --seg-active: #2c2f35;
+    --seg-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    --danger-soft-bg: rgba(240, 68, 56, .14);
+    --danger-soft-color: #f97066;
+}
+
+/* ---------- Design tokens: light ---------- */
+[data-bs-theme="light"] {
+    --brand: #e8590c;
+    --brand-dark: #c2410c;
+    --brand-soft: #fff1e8;
+    --brand-text: #c2410c;
+
+    --bg: #f6f6f4;
+    --surface: #ffffff;
+    --surface-alt: #fafaf9;
+    --line: #ececea;
+    --line-soft: #f2f2f0;
+    --ink: #1f2328;
+    --muted: #6b7280;
+    --faint: #b0b4ba;
+
+    --soft: #f1f1ef;
+    --soft-hover: #e7e7e4;
+    --soft-active: #e0e0dc;
+    --row-hover: #fcfaf8;
+    --nav-bg: rgba(255, 255, 255, .82);
+    --placeholder: #a8acb3;
+    --input-focus-bg: #ffffff;
+    --seg-active: #ffffff;
+    --seg-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+    --danger-soft-bg: #fdecea;
+    --danger-soft-color: #b42318;
+}
+
+/* ---------- Bootstrap overrides (shared by both themes) ---------- */
+:root,
+[data-bs-theme] {
+    --bs-body-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bs-body-font-size: .925rem;
+    --bs-body-bg: var(--bg);
+    --bs-body-color: var(--ink);
+    --bs-secondary-color: var(--muted);
+    --bs-border-color: var(--line);
+    --bs-border-radius: 10px;
+    --bs-border-radius-sm: 8px;
+    --bs-border-radius-lg: 14px;
+    --bs-link-color: var(--brand-text);
+    --bs-link-hover-color: var(--brand);
+    --bs-emphasis-color: var(--ink);
+}
+
+/* ---------- Base ---------- */
+body {
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color .2s, color .2s;
+}
+
+main { flex: 1; }
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--ink);
+}
+
+.text-muted { color: var(--muted) !important; }
+.text-body { color: var(--ink) !important; }
+
+::selection {
+    background: var(--brand-soft);
+    color: var(--brand-text);
+}
+
+/* ---------- Navbar ---------- */
+.app-nav {
+    background: var(--nav-bg);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: .5rem 0;
+}
+
+.app-nav .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .9rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: var(--ink);
+}
+
+.brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--brand);
+    color: #fff;
+    display: inline-grid;
+    place-items: center;
+    font-size: .75rem;
+}
+
+.app-nav .nav-link {
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--muted);
+    padding: .35rem .8rem !important;
+    border-radius: 999px;
+    transition: background-color .15s, color .15s;
+}
+
+.app-nav .nav-link:hover {
+    color: var(--ink);
+    background: var(--soft);
+}
+
+.app-nav .nav-link.active {
+    color: var(--brand-text);
+    background: var(--brand-soft);
+}
+
+.app-nav .navbar-toggler {
+    border: 0;
+    padding: .25rem .5rem;
+    color: var(--ink);
+}
+
+.app-nav .navbar-toggler:focus { box-shadow: none; }
+
+/* ---------- Page header ---------- */
+.eyebrow {
+    font-size: .72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--brand-text);
+}
+
+.page-title {
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: .6rem 1rem;
+    min-width: 92px;
+}
+
+.stat-value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+}
+
+/* ---------- Panels (and plain Bootstrap cards on other pages) ---------- */
+.panel,
+.card {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.card {
+    --bs-card-bg: var(--surface);
+    --bs-card-border-color: var(--line);
+    box-shadow: none;
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--line);
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+.panel-header {
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.panel-title {
+    font-size: .9rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.panel-title i {
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.panel-body { padding: 1.25rem; }
+
+.panel-footer {
+    padding: .75rem 1.25rem;
+    border-top: 1px solid var(--line);
+    background: var(--surface-alt);
+    font-size: .8rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ---------- Forms ---------- */
+.form-label {
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: .35rem;
+}
+
+.form-control,
+.form-select {
+    font-size: .875rem;
+    color: var(--ink);
+    border-color: var(--line);
+    background-color: var(--surface-alt);
+    padding: .5rem .75rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    color: var(--ink);
+    border-color: var(--brand);
+    background-color: var(--input-focus-bg);
+    box-shadow: 0 0 0 3px rgba(247, 107, 28, .18);
+}
+
+.form-control::placeholder { color: var(--placeholder); }
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--soft);
+    opacity: .6;
+}
+
+.form-select option { background: var(--surface); color: var(--ink); }
+
+.input-group-text {
+    background: var(--surface-alt);
+    border-color: var(--line);
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    font-size: .85rem;
+    font-weight: 500;
+    padding: .5rem 1rem;
+}
+
+.btn-sm {
+    font-size: .78rem;
+    padding: .3rem .6rem;
+}
+
+.btn-brand,
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--brand);
+    --bs-btn-border-color: var(--brand);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--brand-dark);
+    --bs-btn-hover-border-color: var(--brand-dark);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--brand-dark);
+    --bs-btn-active-border-color: var(--brand-dark);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: var(--brand);
+    --bs-btn-disabled-border-color: var(--brand);
+    --bs-btn-focus-shadow-rgb: 247, 107, 28;
+}
+
+.btn-soft {
+    --bs-btn-color: var(--ink);
+    --bs-btn-bg: var(--soft);
+    --bs-btn-border-color: var(--soft);
+    --bs-btn-hover-color: var(--ink);
+    --bs-btn-hover-bg: var(--soft-hover);
+    --bs-btn-hover-border-color: var(--soft-hover);
+    --bs-btn-active-color: var(--ink);
+    --bs-btn-active-bg: var(--soft-active);
+    --bs-btn-active-border-color: var(--soft-active);
+}
+
+.btn-soft-danger {
+    --bs-btn-color: var(--danger-soft-color);
+    --bs-btn-bg: var(--danger-soft-bg);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #d92d20;
+    --bs-btn-hover-border-color: #d92d20;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #b42318;
+    --bs-btn-active-border-color: #b42318;
+}
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 8px;
+    color: var(--muted);
+    border: 1px solid transparent;
+    background: transparent;
+    transition: color .15s, background-color .15s;
+}
+
+.btn-icon:hover {
+    color: var(--brand-text);
+    background: var(--brand-soft);
+}
+
+/* ---------- Segmented control (nav pills) ---------- */
+.segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--soft);
+    border-radius: 10px;
+}
+
+.segmented .nav-link {
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: .35rem .85rem;
+}
+
+.segmented .nav-link:hover { color: var(--ink); }
+
+.segmented .nav-link.active {
+    background: var(--seg-active);
+    color: var(--ink);
+    box-shadow: var(--seg-shadow);
+}
+
+/* ---------- Tables ---------- */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--ink);
+    --bs-table-border-color: var(--line);
+    --bs-table-hover-bg: var(--row-hover);
+    --bs-table-hover-color: var(--ink);
+    font-size: .875rem;
+}
+
+.table > thead th {
+    font-size: .7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    font-size: .78rem;
+    color: var(--muted);
+    padding: .9rem 0;
+}
+
+/* ---------- Toasts ---------- */
+.toast {
+    font-size: .85rem;
+    border-radius: 12px;
+}
+
+/* ---------- Scrollbars (WebKit / Chromium) ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: var(--soft-active);
+    border-radius: 999px;
+    border: 2px solid var(--surface);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--faint); }

@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}{{ restaurant_name|title }}{% endblock %}</title>
+
+    <script>
+      // Apply the saved theme before the page renders to avoid a flash
+      (() => {
+        let theme = "dark";
+        try {
+          theme = localStorage.getItem("theme") || "dark";
+        } catch (e) {}
+        document.documentElement.setAttribute("data-bs-theme", theme);
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md app-nav sticky-top">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          <span class="brand-mark"><i class="bi bi-star-fill"></i></span>
+          {{ restaurant_name }}
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainNav"
+          aria-controls="mainNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+          <ul class="navbar-nav ms-auto gap-1 pt-2 pt-md-0">
+            {% set nav_items = [ ('index', 'Menu'), ('about', 'About'),
+            ('contactus', 'Contact') ] %} {% for endpoint, label in nav_items %}
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == endpoint %}active{% endif %}"
+                href="{{ url_for(endpoint) }}"
+                >{{ label }}</a
+              >
+            </li>
+            {% endfor %}
+            <li class="nav-item d-flex align-items-center ms-md-2">
+              <button
+                type="button"
+                class="btn-icon"
+                id="themeToggle"
+                aria-label="Toggle theme"
+              >
+                <i class="bi bi-sun"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Toast notifications (flash messages + messages from JavaScript) -->
+    <div
+      class="toast-container position-fixed top-0 end-0 p-3"
+      id="toastContainer"
+      style="z-index: 1080"
+    >
+      {% with messages = get_flashed_messages(with_categories=true) %} {% for
+      category, msg in messages %}
+      <div
+        class="toast align-items-center text-bg-{{ 'info' if category == 'message' else category }} border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body">{{ msg }}</div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+      </div>
+      {% endfor %} {% endwith %}
+    </div>
+
+    <main>{% block content %}{% endblock content %}</main>
+
+    <footer class="app-footer">
+      <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>&copy; {{ restaurant_name|title }}</span>
+        <span>Built with Flask &amp; Bootstrap</span>
+      </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Shows a Bootstrap toast. Available to every page.
+      function showToast(message, category = "info") {
+        const container = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast align-items-center text-bg-${category} border-0`;
+        toast.setAttribute("role", "alert");
+        toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>`;
+        toast.querySelector(".toast-body").textContent = message;
+        container.appendChild(toast);
+        toast.addEventListener("hidden.bs.toast", () => toast.remove());
+        new bootstrap.Toast(toast, { delay: 4000 }).show();
+      }
+
+      // Light / dark theme toggle (choice is remembered in localStorage)
+      (() => {
+        const root = document.documentElement;
+        const toggle = document.getElementById("themeToggle");
+
+        function syncIcon() {
+          const isDark = root.getAttribute("data-bs-theme") === "dark";
+          toggle.querySelector("i").className = isDark
+            ? "bi bi-sun"
+            : "bi bi-moon-stars";
+          toggle.setAttribute(
+            "aria-label",
+            isDark ? "Switch to light theme" : "Switch to dark theme",
+          );
+          toggle.title = toggle.getAttribute("aria-label");
+        }
+
+        toggle.addEventListener("click", () => {
+          const next =
+            root.getAttribute("data-bs-theme") === "dark" ? "light" : "dark";
+          root.setAttribute("data-bs-theme", next);
+          try {
+            localStorage.setItem("theme", next);
+          } catch (e) {}
+          syncIcon();
+        });
+
+        syncIcon();
+      })();
+
+      // Display flash messages rendered by the server
+      document.querySelectorAll("#toastContainer .toast").forEach((el) => {
+        new bootstrap.Toast(el, { delay: 4000 }).show();
+      });
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

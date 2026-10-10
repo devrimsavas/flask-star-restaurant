@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# Runtime data created by the app
+orders.json
+customers_messages.json
+
+# Flask
+instance/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

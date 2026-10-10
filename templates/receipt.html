@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Receipt · {{ customer }}</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <style>
+      body {
+        background: #f6f4f1;
+      }
+      .receipt {
+        max-width: 420px;
+        margin: 2rem auto;
+        background: #fff;
+        border-radius: 0.75rem;
+        box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.08);
+        font-family: "Courier New", Courier, monospace;
+      }
+      .receipt-divider {
+        border-top: 2px dashed #ced4da;
+        margin: 1rem 0;
+      }
+      .receipt .table {
+        --bs-table-bg: transparent;
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+        .no-print {
+          display: none !important;
+        }
+        .receipt {
+          margin: 0 auto;
+          box-shadow: none;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="receipt p-4">
+      <div class="text-center">
+        <i class="bi bi-star-fill fs-3"></i>
+        <h4 class="fw-bold mb-0 mt-1">{{ restaurant_name }}</h4>
+        <small class="text-muted text-uppercase">Customer receipt</small>
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <div class="d-flex justify-content-between small">
+        <span>Customer</span>
+        <span class="fw-semibold">{{ customer }}</span>
+      </div>
+      <div class="d-flex justify-content-between small">
+        <span>Printed</span>
+        <span>{{ printed_at.strftime("%d.%m.%Y %H:%M") }}</span>
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <table class="table table-sm table-borderless small mb-0">
+        <thead>
+          <tr class="text-muted">
+            <th>Item</th>
+            <th class="text-center">Qty</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in customer_data.orders %} {% set unit = order.unit_price
+          if order.unit_price is defined else order.total_price / order.quantity
+          %}
+          <tr>
+            <td>
+              {{ order.item }}
+              <div class="text-muted" style="font-size: 0.75rem">
+                {{ order.timestamp[:16]|replace("T", " ") }}
+              </div>
+            </td>
+            <td class="text-center">{{ order.quantity }}</td>
+            <td class="text-end">{{ currency }}{{ "%.2f"|format(unit) }}</td>
+            <td class="text-end">
+              {{ currency }}{{ "%.2f"|format(order.total_price) }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="receipt-divider"></div>
+
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="fw-bold">TOTAL PAID</span>
+        <span class="fs-5 fw-bold"
+          >{{ currency }}{{ "%.2f"|format(customer_data.total_paid) }}</span
+        >
+      </div>
+
+      <div class="receipt-divider"></div>
+
+      <p class="text-center small text-muted mb-0">
+        Thank you for dining with us!
+      </p>
+
+      <div class="d-flex gap-2 mt-4 no-print">
+        <button
+          type="button"
+          class="btn btn-dark flex-fill"
+          onclick="window.print()"
+        >
+          <i class="bi bi-printer me-1"></i>Print
+        </button>
+        <a
+          href="{{ url_for('index') }}"
+          class="btn btn-outline-secondary flex-fill"
+        >
+          <i class="bi bi-arrow-left me-1"></i>Back to menu
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // Open the print dialog automatically when the page is opened with ?print=1
+      if (new URLSearchParams(window.location.search).get("print") === "1") {
+        window.addEventListener("load", () => window.print());
+      }
+    </script>
+  </body>
+</html>

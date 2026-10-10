@@ -1,0 +1,13 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.git/
+.gitignore
+.env
+orders.json
+customers_messages.json
+.vscode/
+.idea/
+Dockerfile
+.dockerignore

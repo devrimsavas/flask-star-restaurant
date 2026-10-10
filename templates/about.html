@@ -1,0 +1,240 @@
+{% extends "base.html" %} {% block title %}About · {{ restaurant_name|title }}{%
+endblock %} {% block head %}
+<style>
+  .about-lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .about-text p {
+    color: var(--muted);
+    line-height: 1.75;
+  }
+  .about-text h2 {
+    font-size: 1.05rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .about-text .section-title {
+    font-size: 1.35rem;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Image with a themed fallback if the file is missing */
+  .about-media {
+    position: relative;
+    min-height: 320px;
+    height: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 20%, var(--brand-soft), transparent 60%),
+      var(--surface);
+    display: grid;
+    place-items: center;
+  }
+  .about-media .fallback {
+    text-align: center;
+    color: var(--faint);
+  }
+  .about-media .fallback i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .about-media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fact {
+    border-left: 2px solid var(--brand);
+    padding-left: 0.9rem;
+  }
+  .fact-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .fact-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .feature-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--brand-soft);
+    color: var(--brand-text);
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+    margin-bottom: 0.9rem;
+  }
+  .feature h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+  }
+  .feature p {
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .cta {
+    background:
+      radial-gradient(circle at 100% 0%, var(--brand-soft), transparent 55%),
+      var(--surface);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container py-5">
+  <!-- Intro -->
+  <div class="row g-4 g-lg-5 align-items-stretch mb-5">
+    <div class="col-lg-6 about-text">
+      <div class="eyebrow mb-2">About us</div>
+      <h1 class="page-title mb-3">A place for memorable meals</h1>
+      <p class="about-lead">
+        Welcome to {{ restaurant_name|title }}, the perfect place for a relaxed
+        and memorable dining experience.
+      </p>
+      <p>
+        We pride ourselves on high-quality ingredients and outstanding customer
+        service. Our menu ranges from classic dishes to new creations, so there
+        is something for every taste.
+      </p>
+      <p>
+        Founded in 1995 by Chef John Doe, {{ restaurant_name|title }} has grown
+        from a small family-run kitchen into one of the city's most loved places
+        to eat.
+      </p>
+
+      <h2>Our mission</h2>
+      <p>
+        To serve delicious food in a welcoming atmosphere, so every guest leaves
+        happy and looks forward to coming back.
+      </p>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="about-media">
+        <div class="fallback">
+          <i class="bi bi-cup-hot"></i>
+          <small>{{ restaurant_name|title }}</small>
+        </div>
+        <img
+          src="{{ url_for('static', filename='images/sample2.png') }}"
+          alt="Dining room at {{ restaurant_name|title }}"
+          onerror="this.remove()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Kitchen -->
+  <div class="row g-4 g-lg-5 align-items-stretch mb-5">
+    <div class="col-lg-6 order-2 order-lg-1">
+      <div class="about-media">
+        <div class="fallback">
+          <i class="bi bi-fire"></i>
+          <small>Our kitchen</small>
+        </div>
+        <img
+          src="{{ url_for('static', filename='images/sample1.png') }}"
+          alt="Dish being prepared in the {{ restaurant_name|title }} kitchen"
+          loading="lazy"
+          onerror="this.remove()"
+        />
+      </div>
+    </div>
+    <div
+      class="col-lg-6 order-1 order-lg-2 about-text d-flex flex-column justify-content-center"
+    >
+      <div class="eyebrow mb-2">Our kitchen</div>
+      <h2 class="section-title">Fresh, simple, made to order</h2>
+      <p>
+        Every dish is cooked to order in our open kitchen. We keep the menu
+        focused so each plate gets the time and attention it deserves.
+      </p>
+      <p>
+        From hand-stretched pizza dough to slow-cooked sauces, we still make the
+        things that matter from scratch, just like on day one.
+      </p>
+      <div class="d-flex flex-wrap gap-4 mt-4">
+        <div class="fact">
+          <div class="fact-value">1995</div>
+          <div class="fact-label">Founded</div>
+        </div>
+        <div class="fact">
+          <div class="fact-value">30+</div>
+          <div class="fact-label">Years of service</div>
+        </div>
+        <div class="fact">
+          <div class="fact-value">Local</div>
+          <div class="fact-label">Ingredients first</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="row g-3 mb-5">
+    <div class="col-md-4">
+      <div class="panel panel-body h-100 feature">
+        <div class="feature-icon"><i class="bi bi-people"></i></div>
+        <h3>Our team</h3>
+        <p>
+          Our team is at the heart of everything we do. From our chefs to our
+          waitstaff, everyone is dedicated to making your meal unforgettable.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-body h-100 feature">
+        <div class="feature-icon"><i class="bi bi-basket"></i></div>
+        <h3>Our ingredients</h3>
+        <p>
+          We source the finest ingredients and choose local, sustainable
+          products whenever possible. You can taste the difference in every
+          dish.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="panel panel-body h-100 feature">
+        <div class="feature-icon"><i class="bi bi-geo-alt"></i></div>
+        <h3>Visit us</h3>
+        <p>
+          Find us at 123 Main St, Anytown. Make a reservation today and see why
+          we are a local favourite.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call to action -->
+  <div class="panel cta">
+    <div
+      class="panel-body d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 py-4 px-4"
+    >
+      <div>
+        <h2 class="h5 mb-1">Any questions?</h2>
+        <p class="text-muted mb-0 small">
+          Don't hesitate to get in touch. We're happy to help.
+        </p>
+      </div>
+      <a href="{{ url_for('contactus') }}" class="btn btn-brand">
+        Contact us <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
